@@ -37,6 +37,6 @@ ubuntu_user_data = <<-EOF
                     sudo chmod a+w /var/www/html/index.html 
                     echo "<html><head><meta http-equiv=refresh content=2;'http://siac-demo.cloudprotection.eu/' /> </head><body><H1>" > /var/www/html/index.html
                     echo $HOSTNAME >> /var/www/html/index.html
-                    echo "<BR><BR>Hello World - ${var.externaldnshost} Check Point vSEC IaC Demo <BR><BR>" >> /var/www/html/index.html
+                    echo "<BR><BR>Hello World - Check Point vSEC IaC Demo <BR><BR>" >> /var/www/html/index.html
                     echo "<img src=\"/vsec.jpg\" height=\"25%\">" >> /var/www/html/index.html
                     EOF

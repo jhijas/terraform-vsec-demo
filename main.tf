@@ -34,7 +34,7 @@ resource "aws_subnet" "web" {
   vpc_id                  = "${aws_vpc.default.id}"
   cidr_block              = "${var.aws_webserver_subnet_cidr}"
   tags {
-    Name = "Terraform_web"
+    Name = "Term_web"
   }
 }
 # Create a subnet for LB1
@@ -109,7 +109,7 @@ resource "aws_security_group" "permissive" {
 resource "aws_launch_configuration" "sgw_conf" {
   name          = "sgw_config"
   image_id      = "${lookup(var.aws_amis_vsec, var.aws_region)}"
-  instance_type = "m4.large" 
+  instance_type = "c4.large" 
   key_name      = "${aws_key_pair.auth.id}"
   security_groups = ["${aws_security_group.permissive.id}"]
   user_data     = "${var.my_user_data}"
@@ -122,6 +122,7 @@ resource "aws_launch_configuration" "web_conf" {
   key_name      = "${aws_key_pair.auth.id}"
   security_groups = ["${aws_security_group.permissive.id}"]
   user_data     = "${var.ubuntu_user_data}"
+  associate_public_ip_address = true
 }
 resource "aws_elb" "sgw" {
   name = "terraform-external-elb"
@@ -147,8 +148,8 @@ resource "aws_elb" "sgw" {
 resource "aws_autoscaling_group" "sgw_asg" {
   name = "vsec-layer-autoscale"
   launch_configuration = "${aws_launch_configuration.sgw_conf.id}"
-  max_size = 1
-  min_size = 1
+  max_size = 4
+  min_size = 2
   load_balancers = ["${aws_elb.sgw.id}"]
   vpc_zone_identifier = ["${aws_subnet.external.id}"]
   tag {
