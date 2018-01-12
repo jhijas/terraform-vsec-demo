@@ -2,7 +2,7 @@
 
 Demo code for provisioning a two-tier architectue consisting on a loadblanced autoscale group of Check Point security gateways and a loadbalanced autoscale group of web servers
 
-This example will create a new EC2 Key Pair in the specified AWS Region. The key name and path to the public key must be specified via the terraform command vars.
+This example will create a new EC2 Key Pair in the specified AWS Region. The key name and path to the public key must be specified via the terraform variables file.
 
 Finally the code will register the external LB IP address into a route53 existing zone. 
 
