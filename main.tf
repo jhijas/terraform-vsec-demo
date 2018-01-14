@@ -20,41 +20,43 @@ resource "aws_route" "internet_access" {
   gateway_id             = "${aws_internet_gateway.default.id}"
 }
 
-# Create an external subnet for the security layer facing internet
-resource "aws_subnet" "external" {
+# Define an external subnet for the security layer facing internet in the primary availability zone
+resource "aws_subnet" "external1" {
   vpc_id                  = "${aws_vpc.default.id}"
-  cidr_block              = "${var.aws_external_subnet_cidr}"
-  map_public_ip_on_launch = true
-  tags {
-    Name = "Terraform_external"
-  }
-}
-# Create a subnet to launch our instances into
-resource "aws_subnet" "web" {
-  vpc_id                  = "${aws_vpc.default.id}"
-  cidr_block              = "${var.aws_webserver_subnet_cidr}"
-  tags {
-    Name = "Term_web"
-  }
-}
-# Create a subnet for LB1
-resource "aws_subnet" "lb1" {
-  vpc_id                  = "${aws_vpc.default.id}"
-  cidr_block              = "${var.aws_lb1_subnet_cidr}"
+  cidr_block              = "${var.aws_external1_subnet_cidr}"
   map_public_ip_on_launch = true
   availability_zone       = "${var.primary_az}"
   tags {
-    Name = "Terraform_lb1"
+    Name = "Terraform_external1"
   }
 }
-# Create a second subnet to LB1
-resource "aws_subnet" "lb2" {
+
+# Define an external subnet for the security layer facing internet in the secondary availability zone
+resource "aws_subnet" "external2" {
   vpc_id                  = "${aws_vpc.default.id}"
-  cidr_block              = "${var.aws_lb2_subnet_cidr}"
+  cidr_block              = "${var.aws_external2_subnet_cidr}"
   map_public_ip_on_launch = true
   availability_zone       = "${var.secondary_az}"
   tags {
-    Name = "Terraform_lb2"
+    Name = "Terraform_external2"
+  }
+}
+# Define a subnet for the web servers in the primary availability zone
+resource "aws_subnet" "web1" {
+  vpc_id                  = "${aws_vpc.default.id}"
+  cidr_block              = "${var.aws_webserver1_subnet_cidr}"
+  availability_zone       = "${var.primary_az}"
+  tags {
+    Name = "Terraform_web1"
+  }
+}
+# Define a subnet for the web servers in the secondary availability zone
+resource "aws_subnet" "web2" {
+  vpc_id                  = "${aws_vpc.default.id}"
+  cidr_block              = "${var.aws_webserver2_subnet_cidr}"
+  availability_zone       = "${var.secondary_az}"
+  tags {
+    Name = "Terraform_web2"
   }
 }
 
@@ -127,7 +129,7 @@ resource "aws_launch_configuration" "web_conf" {
 resource "aws_elb" "sgw" {
   name = "terraform-external-elb"
 
-  subnets         = ["${aws_subnet.external.id}"]
+  subnets         = ["${aws_subnet.external1.id}","${aws_subnet.external2.id}"]
   security_groups = ["${aws_security_group.permissive.id}"]
 
   listener {
@@ -151,7 +153,7 @@ resource "aws_autoscaling_group" "sgw_asg" {
   max_size = 4
   min_size = 2
   load_balancers = ["${aws_elb.sgw.id}"]
-  vpc_zone_identifier = ["${aws_subnet.external.id}"]
+  vpc_zone_identifier = ["${aws_subnet.external1.id}","${aws_subnet.external2.id}"]
   tag {
       key = "Name"
       value = "CHKP-AutoScale"
@@ -173,7 +175,7 @@ resource "aws_autoscaling_group" "web_asg" {
   min_size = 3
   health_check_grace_period = 5
   load_balancers = ["${aws_elb.web.id}"]
-  vpc_zone_identifier = ["${aws_subnet.web.id}"]
+  vpc_zone_identifier = ["${aws_subnet.web1.id}","${aws_subnet.web2.id}"]
   tag {
       key = "Name"
       value = "web-AutoScale"
@@ -188,7 +190,7 @@ resource "aws_autoscaling_group" "web_asg" {
 resource "aws_elb" "web" {
   name = "terraform-web-elb"
 
-  subnets         = ["${aws_subnet.web.id}"]
+  subnets         = ["${aws_subnet.web1.id}","${aws_subnet.web2.id}"]
   security_groups = ["${aws_security_group.permissive.id}"]
   tags {
     x-chkp-tags = "management=R80Mgmt:template=Demo-terraform-scale"

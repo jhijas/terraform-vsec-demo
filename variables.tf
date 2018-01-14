@@ -13,15 +13,13 @@ variable "key_name" {
 }
 variable "aws_vpc_cidr" {
 }
-variable "aws_external_subnet_cidr" {
+variable "aws_external1_subnet_cidr" {
 }
-variable "aws_webserver_subnet_cidr" {
+variable "aws_external2_subnet_cidr" {
 }
-variable "aws_database_subnet_cidr" {
+variable "aws_webserver1_subnet_cidr" {
 }
-variable "aws_lb1_subnet_cidr" {
-}
-variable "aws_lb2_subnet_cidr" {
+variable "aws_webserver2_subnet_cidr" {
 }
 variable "my_user_data" {
 }
